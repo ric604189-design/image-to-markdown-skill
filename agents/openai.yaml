@@ -1,0 +1,4 @@
+interface:
+  display_name: "Image to Markdown"
+  short_description: "Faithful Mistral OCR for images and PDFs"
+  default_prompt: "Use $image-to-markdown to convert these images or this PDF into one traceable Markdown file."
