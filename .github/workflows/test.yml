@@ -1,0 +1,56 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test-python-311:
+    name: Python 3.11
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run offline unit tests
+        run: python -B -m unittest discover -s tests -t . -v
+      - name: Check Skill metadata
+        run: python -c "from pathlib import Path; assert 'TO' + 'DO' not in Path('SKILL.md').read_text()"
+
+  test-python-312:
+    name: Python 3.12
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run offline unit tests
+        run: python -B -m unittest discover -s tests -t . -v
+
+  test-python-313:
+    name: Python 3.13
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Run offline unit tests
+        run: python -B -m unittest discover -s tests -t . -v
+
+  test-python-314:
+    name: Python 3.14
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Run offline unit tests
+        run: python -B -m unittest discover -s tests -t . -v
