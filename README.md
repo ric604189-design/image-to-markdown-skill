@@ -21,6 +21,19 @@ OCR requests upload the selected images or PDF to Mistral, an external service.
 Use this tool only when you are authorized to upload that material. The tool
 does not store API keys or print them in its output.
 
+## First use
+
+Before the first OCR run, confirm that you have a usable Mistral API account
+and sufficient balance. The Skill asks for this confirmation once, then stores
+only a confirmation timestamp and schema version in:
+
+    ~/.codex/state/image-to-markdown/prerequisites.json
+
+The record does not contain an API key, balance, input path, document content,
+or OCR output. To require the confirmation again:
+
+    python3 scripts/ocr_to_markdown.py --reset-prerequisites
+
 ## Install as a Codex Skill
 
 Clone the repository into your Codex skills directory:

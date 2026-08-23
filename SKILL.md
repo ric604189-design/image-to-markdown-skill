@@ -9,6 +9,25 @@ Use this skill to faithfully transcribe screenshots, scanned pages, or PDFs.
 Preserve the OCR provider's Markdown; do not correct, complete, summarize,
 translate, or infer text.
 
+Before the first OCR run, execute the following command from this skill
+directory:
+
+    python3 scripts/ocr_to_markdown.py --check-prerequisites
+
+If it exits 3, ask the user once: "Do you confirm that you have a usable
+Mistral API account and sufficient balance for this OCR task?" Do not request
+or expose an API key in that question. Only after an affirmative answer,
+execute:
+
+    python3 scripts/ocr_to_markdown.py --confirm-prerequisites
+
+This writes only a confirmation timestamp and schema version to the local
+Codex state directory. When the status command exits 0, skip this
+account-and-balance question on future uses. Users can require confirmation
+again with:
+
+    python3 scripts/ocr_to_markdown.py --reset-prerequisites
+
 Before submitting content, confirm that the user permits uploading it to Mistral
 unless that permission is already explicit. Explain that Mistral OCR is an
 external service. Do not print the API key or image/PDF content.
