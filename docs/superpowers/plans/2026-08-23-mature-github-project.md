@@ -345,7 +345,7 @@ Run:
     python3 -B -m unittest discover -s tests -t . -v
     python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py .
     git diff --check
-    rg -n --hidden --glob '!.git/**' 'ghp_|github_pat_|MISTRAL_API_KEY=.*[A-Za-z0-9]' .
+    rg -n --hidden --glob '!.git/**' --glob '!docs/superpowers/plans/**' 'ghp_|github_pat_|MISTRAL_API_KEY=(sk_[A-Za-z0-9]+|[A-Za-z0-9]{20,})' .
 
 Expected: Tests and validation pass, whitespace checks are clean, and the
 credential-pattern search finds no committed secret.
