@@ -7,6 +7,7 @@ import mimetypes
 import os
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 from urllib.error import HTTPError, URLError
@@ -14,6 +15,49 @@ from urllib.request import Request, urlopen
 
 SUPPORTED_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf"}
 API_URL = "https://api.mistral.ai/v1/ocr"
+PREREQUISITES_VERSION = 1
+PREREQUISITES_PATH = (
+    Path.home()
+    / ".codex"
+    / "state"
+    / "image-to-markdown"
+    / "prerequisites.json"
+)
+
+
+def prerequisites_confirmed(state_path: Path) -> bool:
+    try:
+        record = json.loads(state_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    if (
+        not isinstance(record, dict)
+        or record.get("version") != PREREQUISITES_VERSION
+        or not isinstance(record.get("confirmed_at"), str)
+        or not record["confirmed_at"]
+    ):
+        return False
+    try:
+        datetime.fromisoformat(record["confirmed_at"])
+    except ValueError:
+        return False
+    return True
+
+
+def confirm_prerequisites(state_path: Path) -> None:
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "version": PREREQUISITES_VERSION,
+        "confirmed_at": datetime.now(timezone.utc).isoformat(),
+    }
+    state_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+
+
+def reset_prerequisites(state_path: Path) -> bool:
+    if not state_path.exists():
+        return False
+    state_path.unlink()
+    return True
 
 
 def natural_key(path: Path) -> list[object]:
@@ -108,16 +152,55 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Convert images or PDFs to one Markdown file with Mistral OCR."
     )
-    parser.add_argument("input", type=Path)
-    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("input", nargs="?", type=Path)
+    parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--api-key", default=os.environ.get("MISTRAL_API_KEY"))
     parser.add_argument("--omit-source-markers", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--check-prerequisites", action="store_true")
+    modes.add_argument("--confirm-prerequisites", action="store_true")
+    modes.add_argument("--reset-prerequisites", action="store_true")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    if args.check_prerequisites:
+        if prerequisites_confirmed(PREREQUISITES_PATH):
+            print("Prerequisites confirmed.")
+            return 0
+        print("Prerequisite confirmation is required.", file=sys.stderr)
+        return 3
+    if args.confirm_prerequisites:
+        try:
+            confirm_prerequisites(PREREQUISITES_PATH)
+        except OSError as error:
+            print(str(error), file=sys.stderr)
+            return 2
+        print(PREREQUISITES_PATH)
+        return 0
+    if args.reset_prerequisites:
+        try:
+            removed = reset_prerequisites(PREREQUISITES_PATH)
+        except OSError as error:
+            print(str(error), file=sys.stderr)
+            return 2
+        print(
+            "Prerequisite confirmation reset."
+            if removed
+            else "No confirmation record found."
+        )
+        return 0
+    if not args.input or args.output_dir is None:
+        print("Input and --output-dir are required for OCR.", file=sys.stderr)
+        return 2
+    if not prerequisites_confirmed(PREREQUISITES_PATH):
+        print(
+            "Prerequisite confirmation is required. Confirm before running OCR.",
+            file=sys.stderr,
+        )
+        return 3
     if not args.api_key:
         print(
             "Mistral API key is required. Set MISTRAL_API_KEY or pass --api-key.",

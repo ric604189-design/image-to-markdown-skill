@@ -270,7 +270,7 @@ Run:
     python3 -B -m unittest discover -s tests -t . -v
     python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py .
     git diff --check
-    if rg -n --hidden --glob '!.git/**' 'ghp_|github_pat_' .; then exit 1; fi
+    if rg -n --hidden --glob '!.git/**' --glob '!docs/superpowers/plans/**' 'ghp_|github_pat_' .; then exit 1; fi
 
 Expected: Tests and Skill validation pass, whitespace is clean, and the
 credential-token search produces no matches.

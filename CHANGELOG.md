@@ -6,6 +6,11 @@ The format follows Keep a Changelog and this project uses semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- One-time local confirmation before the first OCR run that the user has a
+  usable Mistral API account and sufficient balance.
+
 ## [0.1.0] - 2026-08-23
 
 ### Added
